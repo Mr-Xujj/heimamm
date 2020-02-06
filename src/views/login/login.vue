@@ -8,7 +8,7 @@
         <span class="sub-title">用户登录</span>
       </div>
 
-      <!-- 表单 -->
+      <!-- 登录表单 -->
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm" class="login-form">
         <el-form-item prop="phone">
           <el-input v-model="ruleForm.phone" placeholder="请输入手机号" prefix-icon="el-icon-user"></el-input>
@@ -53,7 +53,7 @@
     <!-- dialog 注册对话框 -->
     <!-- Form -->
     <el-dialog title="收货地址" :visible.sync="dialogFormVisible">
-      <el-form :model="regForm">
+      <el-form :model="regForm" :rules="regRules">
         <el-form-item label="头像" prop="avatar" :label-width="formLabelWidth">
           <el-upload
             class="avatar-uploader"
@@ -66,16 +66,16 @@
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </el-upload>
         </el-form-item>
-        <el-form-item label="昵称" :label-width="formLabelWidth">
+        <el-form-item label="昵称" prop="username" :label-width="formLabelWidth">
           <el-input v-model="regForm.username" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="邮箱" :label-width="formLabelWidth">
+        <el-form-item label="邮箱" prop="email" :label-width="formLabelWidth">
           <el-input v-model="regForm.email" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="手机" :label-width="formLabelWidth">
+        <el-form-item label="手机" prop="phone" :label-width="formLabelWidth">
           <el-input v-model="regForm.phone" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="密码" :label-width="formLabelWidth">
+        <el-form-item label="密码" prop="password" :label-width="formLabelWidth">
           <el-input type="password" v-model="regForm.password" autocomplete="off"></el-input>
         </el-form-item>
 
@@ -90,7 +90,7 @@
           </el-row>
         </el-form-item>
 
-        <el-form-item label="验证码" :label-width="formLabelWidth">
+        <el-form-item label="验证码" prop="rcode" :label-width="formLabelWidth">
           <el-row>
             <el-col :span="16">
               <el-input v-model="regForm.rcode" autocomplete="off"></el-input>
@@ -114,7 +114,7 @@ import axios from "axios";
 export default {
   name: "login",
   data() {
-    //  自定义验证规则
+    //  自定义验证规则--手机号
     var checkphone = (rule, value, callback) => {
       if (!value) {
         return callback(new Error("手机号不能为空"));
@@ -126,6 +126,20 @@ export default {
           callback(new Error("请输入正确手机号"));
         }
       }
+    };
+    // 邮箱
+    var checkEmail = (rule,value,callback)=>{
+          if(!value){
+            return callback(new Error("邮箱不能为空"));
+
+          }else{
+            const reg = /\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/;
+            if(reg.test(value)==true){
+              callback()
+            }else{
+              callback(new Error("请输入正确的邮箱"))
+            }
+          }
     };
     return {
       //  登录表单数据
@@ -166,6 +180,24 @@ export default {
           { min: 4, max: 4, message: "验证码长度为4个字符", trigger: "change" }
         ]
       },
+
+      //  注册对话框验证规则
+        regRules:{
+           phone: [{ required: true, validator: checkphone, trigger: "blur" }],
+           email:[{ required:true, validator:checkEmail,trigger:"blur"}],
+           username:[
+             {required:true,message:"用户名不能为空",trigger:"blur"},
+             {min:2,max:16,message:"名字长度为2-16",trigger:"change" }
+           ],
+           password:[
+             {required:true,message:"密码不能为空",trigger:"blur"},
+             {min:6,max:18,message:"密码长度为2-18",trigger:"change" }
+           ],
+           rcode:[
+             {required:true,message:"验证码不能为空",trigger:"blur"},
+             {min:4,max:4,message:"验证码长度为4",trigger:"change" }
+           ]
+        },
       //  验证码地址 用到环境变量 process.env
       captchaURL: process.env.VUE_APP_BASEURL + "/captcha?type=login",
       // 图片上传地址

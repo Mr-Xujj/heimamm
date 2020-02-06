@@ -14,6 +14,10 @@ routes: [
  {
 path: '/login',
 component: login
+ },
+ {
+path: '/',
+redirect: '/login'
  }
   ]
 })
