@@ -85,7 +85,7 @@
               <el-input v-model="regForm.code" autocomplete="off"></el-input>
             </el-col>
             <el-col :offset="1" :span="7">
-              <img class="register-captcha" src="../../assets/captcha.png" alt />
+              <img @click="changeRegCaptcha" class="register-captcha" :src="regFormCaptcha" alt />
             </el-col>
           </el-row>
         </el-form-item>
@@ -167,7 +167,7 @@ export default {
         ]
       },
       //  验证码地址 用到环境变量 process.env
-      captchaURL: process.env.VUE_APP_BASEURL + "/captcha?type?login",
+      captchaURL: process.env.VUE_APP_BASEURL + "/captcha?type=login",
       // 图片上传地址
       uploadUrl: process.env.VUE_APP_BASEURL + "/uploads",
       // 上传地址
@@ -175,7 +175,8 @@ export default {
       //  是否显示dialog对话框
       dialogFormVisible: false,
       // dialog宽度
-      formLabelWidth: "80px"
+      formLabelWidth: "80px",
+      regFormCaptcha:process.env.VUE_APP_BASEURL+"/captcha?type=sendsms"
     };
   },
   methods: {
@@ -209,11 +210,15 @@ export default {
     resetForm(formName) {
       this.$refs[formName].resetFields();
     },
-    //  点击获取验证码
+    //  登录点击获取验证码
     changeCaptcha() {
       //  用时间戳
       this.captchaURL =
-        process.env.VUE_APP_BASEURL + "/captcha?type?login&" + Date.now();
+        process.env.VUE_APP_BASEURL + "/captcha?type=login&" + Date.now();
+    },
+    // 注册表单验证码
+    changeRegCaptcha(){
+         this.regFormCaptcha=`${process.env.VUE_APP_BASEURL}/captcha?type=sendsms&${Date.now()}`
     },
 // 头像上传
     handleAvatarSuccess(res, file) {
