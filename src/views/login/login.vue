@@ -29,7 +29,7 @@
           <el-input v-model="ruleForm.captcha" placeholder="请输入验证码"  prefix-icon="el-icon-key"></el-input>
             </el-col>
             <el-col :span="6">
-              <img class="captcha" src="../../assets/captcha.png" alt="">
+              <img class="captcha" :src="captchaURL" @click="changeCaptcha" alt="">
             </el-col>
           </el-row>
         </el-form-item>
@@ -46,12 +46,44 @@
         </el-form-item>
       </el-form>
     </div>
-
     <img class="login-pic" src="../../assets/login_banner_ele.png" alt />
+    <!-- dialog 注册对话框 -->
+    <el-button type="text" @click="dialogTableVisible = true">打开嵌套表格的 Dialog</el-button>
+
+<el-dialog title="收货地址" :visible.sync="dialogTableVisible">
+  <el-table :data="gridData">
+    <el-table-column property="date" label="日期" width="150"></el-table-column>
+    <el-table-column property="name" label="姓名" width="200"></el-table-column>
+    <el-table-column property="address" label="地址"></el-table-column>
+  </el-table>
+</el-dialog>
+
+<!-- Form -->
+<el-button type="text" @click="dialogFormVisible = true">打开嵌套表单的 Dialog</el-button>
+
+<el-dialog title="收货地址" :visible.sync="dialogFormVisible">
+  <el-form :model="form">
+    <el-form-item label="活动名称" :label-width="formLabelWidth">
+      <el-input v-model="form.name" autocomplete="off"></el-input>
+    </el-form-item>
+    <el-form-item label="活动区域" :label-width="formLabelWidth">
+      <el-select v-model="form.region" placeholder="请选择活动区域">
+        <el-option label="区域一" value="shanghai"></el-option>
+        <el-option label="区域二" value="beijing"></el-option>
+      </el-select>
+    </el-form-item>
+  </el-form>
+  <div slot="footer" class="dialog-footer">
+    <el-button @click="dialogFormVisible = false">取 消</el-button>
+    <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+  </div>
+</el-dialog>
+
   </div>
 </template>
 
 <script>
+import axios from "axios"
 export default {
   name: "login",
   data() {
@@ -69,13 +101,15 @@ export default {
       }
     }
     return {
+      //  登录表单数据
       ruleForm: {
-        phone: "",
-        password: "",
+        phone: "18522222222",
+        password: "12345678",
         captcha:"",
         checked: false,
       
       },
+      // 登录表单验证规则
       rules: {
         phone: [
           { required: true, validator:checkphone, trigger: "blur" },
@@ -90,7 +124,9 @@ export default {
         ]
        
        
-      }
+      },
+      //  验证码地址 用到环境变量 process.env
+      captchaURL:process.env.VUE_APP_BASEURL+"/captcha?type?login"
     };
   },
   methods: {
@@ -100,9 +136,22 @@ export default {
        }else{
          this.$refs.ruleForm.validate(valid => {
            if (valid) {
-             alert("submit!");
+            //  alert("登录成功");
+            axios({
+              url:process.env.VUE_APP_BASEURL+'/login',
+              method:'post',
+              withCredentials:true,
+              data: { 
+                phone:this.ruleForm.phone,
+                password:this.ruleForm.password,
+                code:this.ruleForm.captcha
+              },
+            }).then(res=>{
+              //成功回调
+              window.console.log(res)
+            });
            } else {
-             window.console.log("error submit!!");
+             window.console.log("信息错误");
              return false;
            }
          });
@@ -110,6 +159,11 @@ export default {
     },
     resetForm(formName) {
       this.$refs[formName].resetFields();
+    },
+    //  点击获取验证码
+    changeCaptcha(){
+      //  用时间戳
+      this.captchaURL=process.env.VUE_APP_BASEURL+"/captcha?type?login&"+Date.now()
     }
   }
 };
