@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import { getToken } from "../../utils/token";
+import { removeToken } from "../../utils/token";
 import { userInfo } from "../../api/user";
 export default {
   name: "index",
@@ -66,13 +66,13 @@ export default {
   },
   methods: {},
 
-  beforeCreate() {
-    // 不存在token
-    if (!getToken()) {
-      this.$message.error("滚犊子!!!");
-      this.$router.push("/login");
-    }
-  },
+  // beforeCreate() {
+  //   // 不存在token
+  //   if (!getToken()) {
+  //     this.$message.error("滚犊子!!!");
+  //     this.$router.push("/login");
+  //   }
+  // },
 
   created() {
      userInfo().then(res => {
@@ -82,7 +82,11 @@ export default {
         // 处理用户头像的地址
         res.data.data.avatar = `${process.env.VUE_APP_BASEURL}/${res.data.data.avatar}`;
         this.userInfo = res.data.data;
-      } 
+      }else if(res.data.code===206){
+        this.$message.error("俺老孙火眼金睛，竟敢伪造token"),
+        removeToken()
+        this.$router.push('/login')
+      }
     });
   }
 
