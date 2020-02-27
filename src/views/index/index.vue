@@ -8,8 +8,8 @@
         <span class="title">黑马面面</span>
       </div>
       <div class="right">
-        <img class="user-icon" :src="userInfo.avatar" alt />
-        <span class="user-name">{{userInfo.username}},您好</span>
+        <img class="user-icon" :src="$store.state.userInfo.avatar" alt />
+        <span class="user-name">{{$store.state.userInfo.username}},您好</span>
         <el-button type="primary" size="small">退出</el-button>
       </div>
     </el-header>
@@ -52,8 +52,8 @@
 </template>
 
 <script>
-import { removeToken } from "../../utils/token";
-import { userInfo } from "../../api/user";
+// import { removeToken } from "../../utils/token";
+// import { userInfo } from "../../api/user";
 export default {
   name: "index",
   data() {
@@ -65,7 +65,7 @@ export default {
     };
   },
   methods: {},
-
+// 写在router.js 守卫导航中判断防止页面跳转刷新
   // beforeCreate() {
   //   // 不存在token
   //   if (!getToken()) {
@@ -74,21 +74,22 @@ export default {
   //   }
   // },
 
-  created() {
-     userInfo().then(res => {
-      window.console.log(res);
-      // 如果获取成功 保存用户信息
-      if (res.data.code === 200) {
-        // 处理用户头像的地址
-        res.data.data.avatar = `${process.env.VUE_APP_BASEURL}/${res.data.data.avatar}`;
-        this.userInfo = res.data.data;
-      }else if(res.data.code===206){
-        this.$message.error("俺老孙火眼金睛，竟敢伪造token"),
-        removeToken()
-        this.$router.push('/login')
-      }
-    });
-  }
+// 写在router.js 守卫导航中判断防止页面跳转刷新
+  // created() {
+  //    userInfo().then(res => {
+  //     window.console.log(res);
+  //     // 如果获取成功 保存用户信息
+  //     if (res.data.code === 200) {
+  //       // 处理用户头像的地址
+  //       res.data.data.avatar = `${process.env.VUE_APP_BASEURL}/${res.data.data.avatar}`;
+  //       this.userInfo = res.data.data;
+  //     }else if(res.data.code===206){
+  //       this.$message.error("俺老孙火眼金睛，竟敢伪造token"),
+  //       removeToken()
+  //       this.$router.push('/login')
+  //     }
+  //   });
+  // }
 
 
 

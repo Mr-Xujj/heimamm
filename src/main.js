@@ -8,6 +8,8 @@ import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 //  导入全局样式
 import '../src/style/base.css'
+// 导入Vuex
+import store from './store/store'
 // 注册
 Vue.use(ElementUI);
 
@@ -15,5 +17,6 @@ Vue.config.productionTip = false
 
 new Vue({
   render: h => h(App),
-  router
+  router,
+  store
 }).$mount('#app')
