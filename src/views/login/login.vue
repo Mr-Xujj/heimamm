@@ -54,7 +54,7 @@
     <!-- Form -->
     <el-dialog title="用户注册" :visible.sync="dialogFormVisible">
       <el-form :model="regForm" :rules="regRules" ref="regForm">
-          <el-form-item label="头像" prop="avatar" :label-width="formLabelWidth">
+        <el-form-item label="头像" prop="avatar" :label-width="formLabelWidth">
           <!-- 头像上传 name key 参数名 -->
           <el-upload
             class="avatar-uploader"
@@ -112,7 +112,9 @@
 </template>
 
 <script>
-import axios from "axios";
+// import axios from "axios";
+// 导入登录接口
+import { login, sendsms, register } from "../../api/login.js";
 export default {
   name: "login",
   data() {
@@ -220,15 +222,20 @@ export default {
         this.$refs.ruleForm.validate(valid => {
           if (valid) {
             //  alert("登录成功");
-            axios({
-              url: process.env.VUE_APP_BASEURL + "/login",
-              method: "post",
-              withCredentials: true,
-              data: {
-                phone: this.ruleForm.phone,
-                password: this.ruleForm.password,
-                code: this.ruleForm.captcha
-              }
+            // axios({
+            //   url: process.env.VUE_APP_BASEURL + "/login",
+            //   method: "post",
+            //   withCredentials: true,
+            //   data: {
+            //     phone: this.ruleForm.phone,
+            //     password: this.ruleForm.password,
+            //     code: this.ruleForm.captcha
+            //   }
+            // })
+            login({
+              phone: this.ruleForm.phone,
+              password: this.ruleForm.password,
+              code: this.ruleForm.captcha
             }).then(res => {
               //成功回调
               window.console.log(res);
@@ -255,63 +262,66 @@ export default {
     // 注册表单短息验证码
     getMessCode() {
       const reg = /^(0|86|17951)?(13[0-9]|15[012356789]|166|17[3678]|18[0-9]|14[57])[0-9]{8}$/;
-      if(!reg.test(this.regForm.phone)){
-        return this.$message.error('手机号不合法')
+      if (!reg.test(this.regForm.phone)) {
+        return this.$message.error("手机号不合法");
       }
-      if(this.regForm.code==''||this.regForm.code.length!=4){
-        return this.$message.error('图片验证码不合法')
+      if (this.regForm.code == "" || this.regForm.code.length != 4) {
+        return this.$message.error("图片验证码不合法");
       }
-      axios({
-        url:process.env.VUE_APP_BASEURL+"/sendsms",
-        method:'post',
-        withCredentials:true,
-        data: {
-          phone:this.regForm.phone,
-          code:this.regForm.code
-        },
-      }).then(res=>{
+      // axios({
+      //   url: process.env.VUE_APP_BASEURL + "/sendsms",
+      //   method: "post",
+      //   withCredentials: true,
+      //   data: {
+      //     phone: this.regForm.phone,
+      //     code: this.regForm.code
+      //   }
+      // })
+      sendsms({
+        phone: this.regForm.phone,
+          code: this.regForm.code
+      }).then(res => {
         //成功回调
         // window.console.log(res)
-        if(res.data.code===200){
-          this.$message.success('验证码为:'+res.data.data.captcha)
+        if (res.data.code === 200) {
+          this.$message.success("验证码为:" + res.data.data.captcha);
         }
       });
     },
     //  注册表单验证方法
-    submitForm(){
-      window.console.log(this.regForm.avatar)
-       this.$refs.regForm.validate(valid => {
+    submitForm() {
+      window.console.log(this.regForm.avatar);
+      this.$refs.regForm.validate(valid => {
         if (valid) {
           // 验证成功 调用接口
-          axios({
-            url: process.env.VUE_APP_BASEURL + "/register",
-            method: "post",
-            data: {
+          // axios({
+          //   url: process.env.VUE_APP_BASEURL + "/register",
+          //   method: "post",
+          //   data: {
+          //     username: this.regForm.username,
+          //     phone: this.regForm.phone,
+          //     email: this.regForm.email,
+          //     avatar: this.regForm.avatar,
+          //     password: this.regForm.password,
+          //     rcode: this.regForm.rcode
+          //   }
+          // })
+            register({
               username: this.regForm.username,
               phone: this.regForm.phone,
               email: this.regForm.email,
               avatar: this.regForm.avatar,
               password: this.regForm.password,
               rcode: this.regForm.rcode
-            }
-          })
-          // register({
-          //   username: this.regForm.username,
-          //   phone: this.regForm.phone,
-          //   email: this.regForm.email,
-          //   avatar: this.regForm.avatar,
-          //   password: this.regForm.password,
-          //   rcode: this.regForm.rcode
-          // })
-          .then(res => {
-            window.console.log(res)
-            if (res.data.code === 200) {
-              this.$message.success("注册成功");
-              this.dialogFormVisible = false;
-            } else {
-              this.$message.error("注册失败，请重新注册");
-            }
-          });
+            }).then(res => {
+              window.console.log(res);
+              if (res.data.code === 200) {
+                this.$message.success("注册成功");
+                this.dialogFormVisible = false;
+              } else {
+                this.$message.error("注册失败，请重新注册");
+              }
+            });
         } else {
           // 验证失败
           this.$message.error("很遗憾，内容没有写对！");
@@ -323,7 +333,7 @@ export default {
     handleAvatarSuccess(res, file) {
       // 生成临时地址
       this.imageUrl = URL.createObjectURL(file.raw);
-          // 保存头像地址
+      // 保存头像地址
       this.regForm.avatar = res.data.file_path;
     },
     beforeAvatarUpload(file) {
