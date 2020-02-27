@@ -115,6 +115,8 @@
 // import axios from "axios";
 // 导入登录接口
 import { login, sendsms, register } from "../../api/login.js";
+// 导入token 保存方法
+import { setToken } from "../../utils/token"
 export default {
   name: "login",
   data() {
@@ -239,9 +241,19 @@ export default {
             }).then(res => {
               //成功回调
               window.console.log(res);
+               if(res.data.code===202){
+                this.$message.error(res.data.message)
+              }else if(res.data.code===200){
+                this.$message.success("登陆成功")
+                // 这种不建议用 key可能会写错
+                // localStorage.setItem("token",res.data.data.token)
+                setToken(res.data.data.token)
+                this.$router.push("/index")
+              }
             });
           } else {
-            window.console.log("信息错误");
+            // window.console.log("信息错误");
+            this.$message.error("信息错误");
             return false;
           }
         });
@@ -279,7 +291,7 @@ export default {
       // })
       sendsms({
         phone: this.regForm.phone,
-          code: this.regForm.code
+        code: this.regForm.code
       }).then(res => {
         //成功回调
         // window.console.log(res)
@@ -306,22 +318,22 @@ export default {
           //     rcode: this.regForm.rcode
           //   }
           // })
-            register({
-              username: this.regForm.username,
-              phone: this.regForm.phone,
-              email: this.regForm.email,
-              avatar: this.regForm.avatar,
-              password: this.regForm.password,
-              rcode: this.regForm.rcode
-            }).then(res => {
-              window.console.log(res);
-              if (res.data.code === 200) {
-                this.$message.success("注册成功");
-                this.dialogFormVisible = false;
-              } else {
-                this.$message.error("注册失败，请重新注册");
-              }
-            });
+          register({
+            username: this.regForm.username,
+            phone: this.regForm.phone,
+            email: this.regForm.email,
+            avatar: this.regForm.avatar,
+            password: this.regForm.password,
+            rcode: this.regForm.rcode
+          }).then(res => {
+            window.console.log(res);
+            if (res.data.code === 200) {
+              this.$message.success("注册成功");
+              this.dialogFormVisible = false;
+            } else {
+              this.$message.error("注册失败，请重新注册");
+            }
+          });
         } else {
           // 验证失败
           this.$message.error("很遗憾，内容没有写对！");
