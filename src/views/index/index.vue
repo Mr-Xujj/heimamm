@@ -8,15 +8,20 @@
         <span class="title">黑马面面</span>
       </div>
       <div class="right">
-        <img class="user-icon" src="../../assets/下载.jpg" alt />
-        <span class="user-name">李达,您好</span>
+        <img class="user-icon" :src="userInfo.avatar" alt />
+        <span class="user-name">{{userInfo.username}},您好</span>
         <el-button type="primary" size="small">退出</el-button>
       </div>
     </el-header>
     <el-container>
       <el-aside style="width:aout" class="my-aside">
-            <!-- 导航菜单 router开启路由 -->
-        <el-menu router :default-active="this.$route.path" :collapse="isCollapse" class="el-menu-vertical-demo">
+        <!-- 导航菜单 router开启路由 -->
+        <el-menu
+          router
+          :default-active="this.$route.path"
+          :collapse="isCollapse"
+          class="el-menu-vertical-demo"
+        >
           <el-menu-item index="/index/chart">
             <i class="el-icon-pie-chart"></i>
             <span slot="title">数据概览</span>
@@ -47,20 +52,42 @@
 </template>
 
 <script>
+import { getToken } from "../../utils/token";
+import { userInfo } from "../../api/user";
 export default {
   name: "index",
-  data(){
-    return{
+  data() {
+    return {
       // 是否折叠
-      isCollapse:false
+      isCollapse: false,
+      // 用户信息
+      userInfo: {}
+    };
+  },
+  methods: {},
+
+  beforeCreate() {
+    // 不存在token
+    if (!getToken()) {
+      this.$message.error("滚犊子!!!");
+      this.$router.push("/login");
     }
   },
-  methods:{
 
-  },
-  created(){
-    window.console.log(this.$route)
+  created() {
+     userInfo().then(res => {
+      window.console.log(res);
+      // 如果获取成功 保存用户信息
+      if (res.data.code === 200) {
+        // 处理用户头像的地址
+        res.data.data.avatar = `${process.env.VUE_APP_BASEURL}/${res.data.data.avatar}`;
+        this.userInfo = res.data.data;
+      } 
+    });
   }
+
+
+
 };
 </script>
 
