@@ -52,12 +52,14 @@
 
     <!-- dialog 注册对话框 -->
     <!-- Form -->
-    <el-dialog title="收货地址" :visible.sync="dialogFormVisible">
-      <el-form :model="regForm" :rules="regRules">
-        <el-form-item label="头像" prop="avatar" :label-width="formLabelWidth">
+    <el-dialog title="用户注册" :visible.sync="dialogFormVisible">
+      <el-form :model="regForm" :rules="regRules" ref="regForm">
+          <el-form-item label="头像" prop="avatar" :label-width="formLabelWidth">
+          <!-- 头像上传 name key 参数名 -->
           <el-upload
             class="avatar-uploader"
-            action="https://jsonplaceholder.typicode.com/posts/"
+            :action="uploadUrl"
+            name="image"
             :show-file-list="false"
             :on-success="handleAvatarSuccess"
             :before-upload="beforeAvatarUpload"
@@ -96,14 +98,14 @@
               <el-input v-model="regForm.rcode" autocomplete="off"></el-input>
             </el-col>
             <el-col :offset="1" :span="7">
-              <el-button>获取用户验证码</el-button>
+              <el-button @click="getMessCode">获取用户验证码</el-button>
             </el-col>
           </el-row>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+        <el-button type="primary" @click="submitForm">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -128,18 +130,17 @@ export default {
       }
     };
     // 邮箱
-    var checkEmail = (rule,value,callback)=>{
-          if(!value){
-            return callback(new Error("邮箱不能为空"));
-
-          }else{
-            const reg = /\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/;
-            if(reg.test(value)==true){
-              callback()
-            }else{
-              callback(new Error("请输入正确的邮箱"))
-            }
-          }
+    var checkEmail = (rule, value, callback) => {
+      if (!value) {
+        return callback(new Error("邮箱不能为空"));
+      } else {
+        const reg = /\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/;
+        if (reg.test(value) == true) {
+          callback();
+        } else {
+          callback(new Error("请输入正确的邮箱"));
+        }
+      }
     };
     return {
       //  登录表单数据
@@ -182,22 +183,22 @@ export default {
       },
 
       //  注册对话框验证规则
-        regRules:{
-           phone: [{ required: true, validator: checkphone, trigger: "blur" }],
-           email:[{ required:true, validator:checkEmail,trigger:"blur"}],
-           username:[
-             {required:true,message:"用户名不能为空",trigger:"blur"},
-             {min:2,max:16,message:"名字长度为2-16",trigger:"change" }
-           ],
-           password:[
-             {required:true,message:"密码不能为空",trigger:"blur"},
-             {min:6,max:18,message:"密码长度为2-18",trigger:"change" }
-           ],
-           rcode:[
-             {required:true,message:"验证码不能为空",trigger:"blur"},
-             {min:4,max:4,message:"验证码长度为4",trigger:"change" }
-           ]
-        },
+      regRules: {
+        phone: [{ required: true, validator: checkphone, trigger: "blur" }],
+        email: [{ required: true, validator: checkEmail, trigger: "blur" }],
+        username: [
+          { required: true, message: "用户名不能为空", trigger: "blur" },
+          { min: 2, max: 16, message: "名字长度为2-16", trigger: "change" }
+        ],
+        password: [
+          { required: true, message: "密码不能为空", trigger: "blur" },
+          { min: 6, max: 18, message: "密码长度为2-18", trigger: "change" }
+        ],
+        rcode: [
+          { required: true, message: "验证码不能为空", trigger: "blur" },
+          { min: 4, max: 4, message: "验证码长度为4", trigger: "change" }
+        ]
+      },
       //  验证码地址 用到环境变量 process.env
       captchaURL: process.env.VUE_APP_BASEURL + "/captcha?type=login",
       // 图片上传地址
@@ -208,7 +209,7 @@ export default {
       dialogFormVisible: false,
       // dialog宽度
       formLabelWidth: "80px",
-      regFormCaptcha:process.env.VUE_APP_BASEURL+"/captcha?type=sendsms"
+      regFormCaptcha: process.env.VUE_APP_BASEURL + "/captcha?type=sendsms"
     };
   },
   methods: {
@@ -239,9 +240,6 @@ export default {
         });
       }
     },
-    resetForm(formName) {
-      this.$refs[formName].resetFields();
-    },
     //  登录点击获取验证码
     changeCaptcha() {
       //  用时间戳
@@ -249,19 +247,91 @@ export default {
         process.env.VUE_APP_BASEURL + "/captcha?type=login&" + Date.now();
     },
     // 注册表单验证码
-    changeRegCaptcha(){
-         this.regFormCaptcha=`${process.env.VUE_APP_BASEURL}/captcha?type=sendsms&${Date.now()}`
+    changeRegCaptcha() {
+      this.regFormCaptcha = `${
+        process.env.VUE_APP_BASEURL
+      }/captcha?type=sendsms&${Date.now()}`;
     },
-// 头像上传
+    // 注册表单短息验证码
+    getMessCode() {
+      const reg = /^(0|86|17951)?(13[0-9]|15[012356789]|166|17[3678]|18[0-9]|14[57])[0-9]{8}$/;
+      if(!reg.test(this.regForm.phone)){
+        return this.$message.error('手机号不合法')
+      }
+      if(this.regForm.code==''||this.regForm.code.length!=4){
+        return this.$message.error('图片验证码不合法')
+      }
+      axios({
+        url:process.env.VUE_APP_BASEURL+"/sendsms",
+        method:'post',
+        withCredentials:true,
+        data: {
+          phone:this.regForm.phone,
+          code:this.regForm.code
+        },
+      }).then(res=>{
+        //成功回调
+        // window.console.log(res)
+        if(res.data.code===200){
+          this.$message.success('验证码为:'+res.data.data.captcha)
+        }
+      });
+    },
+    //  注册表单验证方法
+    submitForm(){
+      window.console.log(this.regForm.avatar)
+       this.$refs.regForm.validate(valid => {
+        if (valid) {
+          // 验证成功 调用接口
+          axios({
+            url: process.env.VUE_APP_BASEURL + "/register",
+            method: "post",
+            data: {
+              username: this.regForm.username,
+              phone: this.regForm.phone,
+              email: this.regForm.email,
+              avatar: this.regForm.avatar,
+              password: this.regForm.password,
+              rcode: this.regForm.rcode
+            }
+          })
+          // register({
+          //   username: this.regForm.username,
+          //   phone: this.regForm.phone,
+          //   email: this.regForm.email,
+          //   avatar: this.regForm.avatar,
+          //   password: this.regForm.password,
+          //   rcode: this.regForm.rcode
+          // })
+          .then(res => {
+            window.console.log(res)
+            if (res.data.code === 200) {
+              this.$message.success("注册成功");
+              this.dialogFormVisible = false;
+            } else {
+              this.$message.error("注册失败，请重新注册");
+            }
+          });
+        } else {
+          // 验证失败
+          this.$message.error("很遗憾，内容没有写对！");
+          return false;
+        }
+      });
+    },
+    // 头像上传
     handleAvatarSuccess(res, file) {
+      // 生成临时地址
       this.imageUrl = URL.createObjectURL(file.raw);
+          // 保存头像地址
+      this.regForm.avatar = res.data.file_path;
     },
     beforeAvatarUpload(file) {
       const isJPG = file.type === "image/jpeg" || file.type === "image/png";
       const isLt2M = file.size / 1024 / 1024 < 2;
 
       if (!isJPG) {
-        this.$message.error("上传头像图片只能是 JPG \ PNG 格式!");
+        this.$message.error("上传头像图片只能是 JPG 或 png 格式!");
       }
       if (!isLt2M) {
         this.$message.error("上传头像图片大小不能超过 2MB!");
@@ -375,7 +445,7 @@ export default {
     height: 178px;
     display: block;
   }
-    // 头像居中
+  // 头像居中
   .avatar-uploader {
     text-align: center;
   }
