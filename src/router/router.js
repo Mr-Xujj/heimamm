@@ -19,7 +19,7 @@ import { getToken, removeToken } from '../utils/token'
 import store from '../store/store'
 // 按需导入 element-ui
 import { Message } from 'element-ui'
-import { userInfo} from "../api/user"
+import { userInfo } from "../api/user"
 //注册 vue-router
 Vue.use(VueRouter)
 // 实例化
@@ -86,15 +86,19 @@ router.beforeEach((to, from, next) => {
         window.console.log(res);
         // 如果获取成功 保存用户信息
         if (res.data.code === 200) {
-        
-          store.state.userInfo = res.data.data;
-         // 用户头像 增加基地址
-         store.state.userInfo.avatar = process.env.VUE_APP_BASEURL + "/" + store.state.userInfo.avatar;
+
+          //   store.state.userInfo = res.data.data;
+          //  // 用户头像 增加基地址
+          //  store.state.userInfo.avatar = process.env.VUE_APP_BASEURL + "/" + store.state.userInfo.avatar;
           // window.console.log(store.state.userInfo)
+          // 方法二
+          res.data.data.avatar = process.env.VUE_APP_BASEURL + "/" +  res.data.data.avatar;
+          store.commit("changeUserInfo",res.data.data)
+
           next()
-        }else if(res.data.code===206){
+        } else if (res.data.code === 206) {
           Message.error("俺老孙火眼金睛，竟敢伪造token"),
-          removeToken()
+            removeToken()
           next('/login')
         }
       });

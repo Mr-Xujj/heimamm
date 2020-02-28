@@ -6,8 +6,14 @@ import Vuex from "vuex"
 Vue.use(Vuex)
 
 const store = new Vuex.Store({
-    state:{
-        userInfo:{}
+    state: {
+        userInfo: {}
+    },
+    mutations: {
+        // newUserIfon就是router.js中 state.commit(res.data.data)数据
+        changeUserInfo(state, newUserIfon) {
+            state.userInfo = newUserIfon
+        }
     }
 })
 
