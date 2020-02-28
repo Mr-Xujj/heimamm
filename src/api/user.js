@@ -18,3 +18,14 @@ export function userInfo() {
         }
     })
 }
+
+// 退出接口
+export function logout(){
+    return instance({
+        url:"/logout",
+        method:"get",
+        headers:{
+            token:getToken()
+        }
+    })
+}

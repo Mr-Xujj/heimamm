@@ -32,8 +32,12 @@ const router = new VueRouter({
     },
     {
       path: '/',
-      redirect: login
+      component: login
     },
+    // {
+    //   path: '/',
+    //   redirect: login
+    // },
     {
       path: '/index',
       component: index,

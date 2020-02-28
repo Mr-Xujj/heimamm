@@ -10,7 +10,7 @@
       <div class="right">
         <img class="user-icon" :src="$store.state.userInfo.avatar" alt />
         <span class="user-name">{{$store.state.userInfo.username}},您好</span>
-        <el-button type="primary" size="small">退出</el-button>
+        <el-button type="primary" @click="logout" size="small">退出</el-button>
       </div>
     </el-header>
     <el-container>
@@ -52,8 +52,8 @@
 </template>
 
 <script>
-// import { removeToken } from "../../utils/token";
-// import { userInfo } from "../../api/user";
+import { removeToken } from "../../utils/token";
+import { logout } from "../../api/user";
 export default {
   name: "index",
   data() {
@@ -64,7 +64,38 @@ export default {
       userInfo: {}
     };
   },
-  methods: {},
+  methods: {
+    // 退出
+    logout(){
+      this.$confirm('是否在离开页面？', '确认信息', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消'
+        })
+          .then(() => {
+            logout().then(res=>{
+              // window.console.log(res)
+              if(res.data.code===200){
+                // 清空token
+                removeToken()
+                // 清除Vuex里userInfo信息
+                this.$store.state.userInfo={}
+                // 跳转到首页
+                this.$router.push("/login")
+              }
+            })
+          })
+          .catch(action => {
+            this.$message({
+              type: 'info',
+              message: action === 'cancel'
+                ? '放弃保存并离开页面'
+                : '停留在当前页面'
+            })
+          })
+    }
+
+
+  },
 // 写在router.js 守卫导航中判断防止页面跳转刷新
   // beforeCreate() {
   //   // 不存在token
