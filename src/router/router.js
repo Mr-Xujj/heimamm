@@ -41,26 +41,46 @@ const router = new VueRouter({
     {
       path: '/index',
       component: index,
+      // 所有人都能访问
+      meta:{
+        power:["超级管理员","管理员","老师","学生"]
+      },
       children: [
         {
+          // 数据
           path: 'chart',
-          component: chart
+          component: chart,
+          meta:{
+            power:["超级管理员","管理员","老师"]
+          }
         },
         {
           path: 'enterprise',
-          component: enterprise
+          component: enterprise,
+          meta:{
+            power:["超级管理员","管理员","老师"]
+          }
         },
         {
           path: 'question',
-          component: question
+          component: question,
+          meta:{
+            power:["超级管理员","管理员","老师","学生"]
+          }
         },
         {
           path: 'subject',
-          component: subject
+          component: subject,
+          meta:{
+            power:["超级管理员","管理员","老师"]
+          }
         },
         {
           path: 'user',
-          component: user
+          component: user,
+          meta:{
+            power:["超级管理员","管理员"]
+          }
         },
       ]
 
@@ -81,21 +101,31 @@ router.beforeEach((to, from, next) => {
     } else {
       // 有token要区分伪造token
       // next()
-
       userInfo().then(res => {
-        window.console.log(res);
+        // window.console.log(res);
         // 如果获取成功 保存用户信息
         if (res.data.code === 200) {
 
-          //   store.state.userInfo = res.data.data;
-          //  // 用户头像 增加基地址
-          //  store.state.userInfo.avatar = process.env.VUE_APP_BASEURL + "/" + store.state.userInfo.avatar;
-          // window.console.log(store.state.userInfo)
-          // 方法二
-          res.data.data.avatar = process.env.VUE_APP_BASEURL + "/" +  res.data.data.avatar;
-          store.commit("changeUserInfo",res.data.data)
+          // 如果禁用返回登录页  status=0禁用
+          if(res.data.data.status===0){
+            // 禁用状态
+            Message.warning("你已被关小黑屋")
+            next('/login')
 
-          next()
+          }else{
+            res.data.data.avatar = process.env.VUE_APP_BASEURL + "/" +  res.data.data.avatar;
+            store.commit("changeUserInfo",res.data.data)
+            window.console.log(to)
+            window.console.log(res.data.data)
+            // meta访问白名单-权限
+            if(to.meta.power.includes(res.data.data.role)){
+              // 能访问
+              next()
+            }else{
+              Message.warning("逼格不够，充值使你强大")
+            }
+           
+          }
         } else if (res.data.code === 206) {
           Message.error("俺老孙火眼金睛，竟敢伪造token"),
             removeToken()

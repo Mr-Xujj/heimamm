@@ -8,6 +8,8 @@ import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 // 导入全局过滤器
 import './filters/filter'
+// 导入自定义指令
+import './directives/directives'
 //  导入全局样式
 import '../src/style/base.css'
 // 导入Vuex
