@@ -52,6 +52,7 @@
 </template>
 
 <script>
+
 import { removeToken } from "../../utils/token";
 import { logout } from "../../api/user";
 export default {
